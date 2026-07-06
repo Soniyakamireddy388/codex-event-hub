@@ -116,7 +116,7 @@ function Round2() {
     }
   }
 
-  async function handleSubmit(auto = false) {
+  const handleSubmit = useCallback(async (auto = false) => {
     if (!email || submittedRef.current) return;
     submittedRef.current = true;
     setPhase("submitting");
@@ -128,7 +128,14 @@ function Round2() {
       setErrorMsg((err instanceof Error ? err.message : "Submission failed.") + (auto ? " (auto-submit)" : ""));
       setPhase("error");
     }
-  }
+  }, [email, language, code]);
+
+  const { violations, warning, dismissWarning } = useAssessmentMonitor({
+    email,
+    round: "round2",
+    enabled: phase === "ready",
+    onAutoSubmit: () => { void handleSubmit(true); },
+  });
 
   if (phase === "checking") {
     return (
