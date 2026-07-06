@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import { Loader2, Clock, Bug, CheckCircle2 } from "lucide-react";
 import { getParticipantStatus, submitRound2 } from "@/lib/participants.functions";
 import { loadEmail, clearEmail } from "@/lib/session";
+import { useAssessmentMonitor } from "@/lib/useAssessmentMonitor";
+import { ViolationBanner } from "@/components/ViolationBanner";
 
 export const Route = createFileRoute("/round2")({
   head: () => ({
