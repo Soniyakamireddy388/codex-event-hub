@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RulesRouteImport } from './routes/rules'
+import { Route as Round2RouteImport } from './routes/round2'
+import { Route as Round1RouteImport } from './routes/round1'
+import { Route as ResultRouteImport } from './routes/result'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
@@ -18,6 +21,21 @@ import { Route as IndexRouteImport } from './routes/index'
 const RulesRoute = RulesRouteImport.update({
   id: '/rules',
   path: '/rules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Round2Route = Round2RouteImport.update({
+  id: '/round2',
+  path: '/round2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Round1Route = Round1RouteImport.update({
+  id: '/round1',
+  path: '/round1',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultRoute = ResultRouteImport.update({
+  id: '/result',
+  path: '/result',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -46,6 +64,9 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
+  '/result': typeof ResultRoute
+  '/round1': typeof Round1Route
+  '/round2': typeof Round2Route
   '/rules': typeof RulesRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +74,9 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
+  '/result': typeof ResultRoute
+  '/round1': typeof Round1Route
+  '/round2': typeof Round2Route
   '/rules': typeof RulesRoute
 }
 export interface FileRoutesById {
@@ -61,14 +85,42 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
+  '/result': typeof ResultRoute
+  '/round1': typeof Round1Route
+  '/round2': typeof Round2Route
   '/rules': typeof RulesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/contact' | '/login' | '/rules'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/login'
+    | '/result'
+    | '/round1'
+    | '/round2'
+    | '/rules'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/login' | '/rules'
-  id: '__root__' | '/' | '/about' | '/contact' | '/login' | '/rules'
+  to:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/login'
+    | '/result'
+    | '/round1'
+    | '/round2'
+    | '/rules'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/login'
+    | '/result'
+    | '/round1'
+    | '/round2'
+    | '/rules'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +128,9 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
   LoginRoute: typeof LoginRoute
+  ResultRoute: typeof ResultRoute
+  Round1Route: typeof Round1Route
+  Round2Route: typeof Round2Route
   RulesRoute: typeof RulesRoute
 }
 
@@ -86,6 +141,27 @@ declare module '@tanstack/react-router' {
       path: '/rules'
       fullPath: '/rules'
       preLoaderRoute: typeof RulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/round2': {
+      id: '/round2'
+      path: '/round2'
+      fullPath: '/round2'
+      preLoaderRoute: typeof Round2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/round1': {
+      id: '/round1'
+      path: '/round1'
+      fullPath: '/round1'
+      preLoaderRoute: typeof Round1RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/result': {
+      id: '/result'
+      path: '/result'
+      fullPath: '/result'
+      preLoaderRoute: typeof ResultRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -124,6 +200,9 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
   LoginRoute: LoginRoute,
+  ResultRoute: ResultRoute,
+  Round1Route: Round1Route,
+  Round2Route: Round2Route,
   RulesRoute: RulesRoute,
 }
 export const routeTree = rootRouteImport
