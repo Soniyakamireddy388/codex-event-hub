@@ -23,6 +23,8 @@ export type Database = {
           round1_completed: boolean
           round1_completed_at: string | null
           round1_score: number | null
+          round1_violations: number
+          round2_violations: number
         }
         Insert: {
           created_at?: string
@@ -32,6 +34,8 @@ export type Database = {
           round1_completed?: boolean
           round1_completed_at?: string | null
           round1_score?: number | null
+          round1_violations?: number
+          round2_violations?: number
         }
         Update: {
           created_at?: string
@@ -41,6 +45,8 @@ export type Database = {
           round1_completed?: boolean
           round1_completed_at?: string | null
           round1_score?: number | null
+          round1_violations?: number
+          round2_violations?: number
         }
         Relationships: []
       }
