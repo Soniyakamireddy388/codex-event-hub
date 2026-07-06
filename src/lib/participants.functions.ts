@@ -144,10 +144,12 @@ export const recordViolation = createServerFn({ method: "POST" })
   .inputValidator((input) => violationSchema.parse(input))
   .handler(async ({ data }): Promise<{ ok: true }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const column = data.round === "round1" ? "round1_violations" : "round2_violations";
+    const update = data.round === "round1"
+      ? { round1_violations: data.count }
+      : { round2_violations: data.count };
     const { error } = await supabaseAdmin
       .from("participants")
-      .update({ [column]: data.count })
+      .update(update)
       .eq("email", data.email);
     if (error) throw new Error(error.message);
     return { ok: true };
