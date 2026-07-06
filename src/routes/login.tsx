@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, Mail, User } from "lucide-react";
+import { Lock, Mail, Loader2 } from "lucide-react";
+import { loginParticipant } from "@/lib/participants.functions";
+import { saveEmail } from "@/lib/session";
 
 const LOGO = "https://res.cloudinary.com/snbrllpp/image/upload/f_auto,q_auto/vvisc_logo_six37g";
 
@@ -17,7 +19,32 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await loginParticipant({ data: { email: trimmed } });
+      saveEmail(result.email);
+      if (result.status === "round1") navigate({ to: "/round1" });
+      else if (result.status === "round2") navigate({ to: "/round2" });
+      else navigate({ to: "/result" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-16 sm:px-6">
@@ -26,58 +53,57 @@ function Login() {
         <div className="mb-6 flex flex-col items-center text-center">
           <img src={LOGO} alt="VVISC" className="h-16 w-16 rounded-full ring-2 ring-primary/50 animate-pulse-glow" />
           <h1 className="mt-4 font-display text-2xl font-bold uppercase tracking-wider neon-text">
-            {mode === "login" ? "Participant Login" : "Register"}
+            Participant Login
           </h1>
-          <p className="mt-1 text-xs uppercase tracking-widest text-muted-foreground">CODE RUSH 1.0 · Access Portal</p>
+          <p className="mt-1 text-xs uppercase tracking-widest text-muted-foreground">
+            CODE RUSH 1.0 · Access Portal
+          </p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert("Backend not connected yet. Enable Lovable Cloud to activate authentication."); }}>
-          {mode === "register" && (
-            <Field icon={User} label="Full name" type="text" placeholder="Your name" />
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Email
+            </span>
+            <div className="flex items-center gap-2 rounded-md border border-border bg-background/60 px-3 focus-within:border-primary focus-within:neon-glow">
+              <Mail className="h-4 w-4 text-primary" />
+              <input
+                type="email"
+                required
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@college.edu"
+                className="w-full bg-transparent py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              />
+            </div>
+          </label>
+
+          {error && (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
           )}
-          <Field icon={Mail} label="Email" type="email" placeholder="you@college.edu" />
-          <Field icon={Lock} label="Password" type="password" placeholder="••••••••" />
 
           <button
             type="submit"
-            className="w-full rounded-md bg-primary py-3 font-bold uppercase tracking-wider text-primary-foreground transition-transform hover:scale-[1.02] animate-pulse-glow"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 font-bold uppercase tracking-wider text-primary-foreground transition-transform hover:scale-[1.02] animate-pulse-glow disabled:opacity-70 disabled:hover:scale-100"
           >
-            {mode === "login" ? "Enter Arena" : "Create Account"}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</> : <>Enter Arena</>}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          {mode === "login" ? "New here?" : "Already registered?"}{" "}
-          <button
-            type="button"
-            onClick={() => setMode(mode === "login" ? "register" : "login")}
-            className="font-semibold text-primary hover:underline"
-          >
-            {mode === "login" ? "Create account" : "Login instead"}
-          </button>
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <Lock className="h-3 w-3" />
+          <span>Your email uniquely identifies your attempt.</span>
         </div>
 
-        <div className="mt-6 border-t border-border/50 pt-4 text-center text-xs text-muted-foreground">
-          By continuing you agree to the <Link to="/rules" className="text-primary hover:underline">event rules</Link>.
+        <div className="mt-4 border-t border-border/50 pt-4 text-center text-xs text-muted-foreground">
+          By continuing you agree to the{" "}
+          <Link to="/rules" className="text-primary hover:underline">event rules</Link>.
         </div>
       </div>
     </div>
-  );
-}
-
-function Field({ icon: Icon, label, type, placeholder }: { icon: React.ElementType; label: string; type: string; placeholder: string }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-2 rounded-md border border-border bg-background/60 px-3 focus-within:border-primary focus-within:neon-glow">
-        <Icon className="h-4 w-4 text-primary" />
-        <input
-          type={type}
-          required
-          placeholder={placeholder}
-          className="w-full bg-transparent py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-        />
-      </div>
-    </label>
   );
 }
