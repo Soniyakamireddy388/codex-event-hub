@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
-import { Loader2, Clock, Bug, CheckCircle2 } from "lucide-react";
+import { Loader2, Clock, Bug, CheckCircle2, Play, Terminal } from "lucide-react";
 import { getParticipantStatus, submitRound2 } from "@/lib/participants.functions";
 import { loadEmail, clearEmail } from "@/lib/session";
 import { useAssessmentMonitor } from "@/lib/useAssessmentMonitor";
@@ -69,6 +69,57 @@ function Round2() {
   const [touchedLangs, setTouchedLangs] = useState<Record<Lang, boolean>>({ java: false, python: false, c: false });
   const [remaining, setRemaining] = useState(20 * 60);
   const submittedRef = useRef(false);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const handleRun = useCallback(async () => {
+    if (running) return;
+    setRunning(true);
+    setRunResult(null);
+    const pistonLang: Record<Lang, { language: string; version: string; filename: string }> = {
+      python: { language: "python", version: "3.10.0", filename: "main.py" },
+      java: { language: "java", version: "15.0.2", filename: "Main.java" },
+      c: { language: "c", version: "10.2.0", filename: "main.c" },
+    };
+    const cfg = pistonLang[language];
+    // For Java, Piston requires the public class name to match filename.
+    // Try to detect the public class name; fall back to Main.
+    let filename = cfg.filename;
+    if (language === "java") {
+      const m = code.match(/public\s+class\s+([A-Za-z_$][\w$]*)/);
+      if (m) filename = `${m[1]}.java`;
+    }
+    try {
+      const res = await fetch("https://emkc.org/api/v2/piston/execute", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          language: cfg.language,
+          version: cfg.version,
+          files: [{ name: filename, content: code }],
+        }),
+      });
+      if (!res.ok) throw new Error(`Runner returned ${res.status}`);
+      const data = await res.json() as {
+        compile?: { stderr?: string; code?: number };
+        run?: { stderr?: string; stdout?: string; code?: number };
+      };
+      const compileErr = data.compile?.stderr?.trim();
+      const runErr = data.run?.stderr?.trim();
+      const stdout = data.run?.stdout ?? "";
+      if (compileErr && (data.compile?.code ?? 0) !== 0) {
+        setRunResult({ ok: false, message: compileErr });
+      } else if (runErr && (data.run?.code ?? 0) !== 0) {
+        setRunResult({ ok: false, message: runErr });
+      } else {
+        setRunResult({ ok: true, message: `Executed successfully.\n\nOutput:\n${stdout || "(no output)"}` });
+      }
+    } catch (err) {
+      setRunResult({ ok: false, message: err instanceof Error ? err.message : "Unable to run code." });
+    } finally {
+      setRunning(false);
+    }
+  }, [code, language, running]);
 
   // Access guard: must be qualified.
   useEffect(() => {
@@ -240,7 +291,14 @@ function Round2() {
         />
       </div>
 
-      <div className="mt-8 flex flex-col items-center gap-3">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <button
+          onClick={handleRun}
+          disabled={running}
+          className="inline-flex items-center gap-2 rounded-md border border-primary/60 bg-primary/10 px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-primary transition hover:bg-primary/20 disabled:opacity-70"
+        >
+          {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Running…</> : <><Play className="h-4 w-4" /> Run Code</>}
+        </button>
         <button
           onClick={() => handleSubmit(false)}
           disabled={phase === "submitting"}
@@ -248,8 +306,27 @@ function Round2() {
         >
           {phase === "submitting" ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</> : "Submit Round 2"}
         </button>
-        <p className="text-xs text-muted-foreground">Your code will auto-submit when the timer hits 00:00.</p>
       </div>
+
+      {runResult && (
+        <div
+          className={`mt-6 overflow-hidden rounded-xl border ${
+            runResult.ok ? "border-emerald-500/50 bg-emerald-500/5" : "border-destructive/50 bg-destructive/5"
+          }`}
+        >
+          <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2">
+            <Terminal className={`h-4 w-4 ${runResult.ok ? "text-emerald-400" : "text-destructive"}`} />
+            <span className={`text-xs font-bold uppercase tracking-widest ${runResult.ok ? "text-emerald-400" : "text-destructive"}`}>
+              {runResult.ok ? "Executed" : "Error"}
+            </span>
+          </div>
+          <pre className="max-h-64 overflow-auto whitespace-pre-wrap px-4 py-3 text-sm font-mono text-foreground">
+{runResult.message}
+          </pre>
+        </div>
+      )}
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">Your code will auto-submit when the timer hits 00:00.</p>
     </div>
   );
 }
