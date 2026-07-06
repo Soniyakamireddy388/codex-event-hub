@@ -99,3 +99,36 @@ export const submitRound1 = createServerFn({ method: "POST" })
 
     return { qualified, score, total };
   });
+
+// Submit Round 2 code. Only qualified participants may submit.
+const round2Schema = z.object({
+  email: z.string().trim().toLowerCase().email().max(255),
+  language: z.enum(["java", "python", "c"]),
+  code: z.string().max(20000),
+});
+
+export const submitRound2 = createServerFn({ method: "POST" })
+  .inputValidator((input) => round2Schema.parse(input))
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { email, language, code } = data;
+
+    const { data: p, error: selErr } = await supabaseAdmin
+      .from("participants")
+      .select("qualified, round1_completed")
+      .eq("email", email)
+      .maybeSingle();
+    if (selErr) throw new Error(selErr.message);
+    if (!p || !p.round1_completed || !p.qualified) {
+      throw new Error("You are not qualified for Round 2.");
+    }
+
+    const { error: upErr } = await supabaseAdmin
+      .from("round2_submissions")
+      .upsert(
+        { email, language, code, submitted_at: new Date().toISOString() },
+        { onConflict: "email" }
+      );
+    if (upErr) throw new Error(upErr.message);
+    return { ok: true };
+  });
