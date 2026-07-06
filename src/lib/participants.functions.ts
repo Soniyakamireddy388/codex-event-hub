@@ -85,7 +85,7 @@ export const submitRound1 = createServerFn({ method: "POST" })
       throw new Error("You have already attempted Round 1.");
     }
 
-    const qualified = score / total >= 0.6;
+    const qualified = score > 10;
     const { error: upErr } = await supabaseAdmin
       .from("participants")
       .update({
