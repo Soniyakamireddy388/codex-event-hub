@@ -132,3 +132,23 @@ export const submitRound2 = createServerFn({ method: "POST" })
     if (upErr) throw new Error(upErr.message);
     return { ok: true };
   });
+
+// Record a violation (tab switch / focus loss) count for the current round.
+const violationSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(255),
+  round: z.enum(["round1", "round2"]),
+  count: z.number().int().min(0).max(999),
+});
+
+export const recordViolation = createServerFn({ method: "POST" })
+  .inputValidator((input) => violationSchema.parse(input))
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const column = data.round === "round1" ? "round1_violations" : "round2_violations";
+    const { error } = await supabaseAdmin
+      .from("participants")
+      .update({ [column]: data.count })
+      .eq("email", data.email);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
