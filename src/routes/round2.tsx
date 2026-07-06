@@ -69,6 +69,57 @@ function Round2() {
   const [touchedLangs, setTouchedLangs] = useState<Record<Lang, boolean>>({ java: false, python: false, c: false });
   const [remaining, setRemaining] = useState(20 * 60);
   const submittedRef = useRef(false);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const handleRun = useCallback(async () => {
+    if (running) return;
+    setRunning(true);
+    setRunResult(null);
+    const pistonLang: Record<Lang, { language: string; version: string; filename: string }> = {
+      python: { language: "python", version: "3.10.0", filename: "main.py" },
+      java: { language: "java", version: "15.0.2", filename: "Main.java" },
+      c: { language: "c", version: "10.2.0", filename: "main.c" },
+    };
+    const cfg = pistonLang[language];
+    // For Java, Piston requires the public class name to match filename.
+    // Try to detect the public class name; fall back to Main.
+    let filename = cfg.filename;
+    if (language === "java") {
+      const m = code.match(/public\s+class\s+([A-Za-z_$][\w$]*)/);
+      if (m) filename = `${m[1]}.java`;
+    }
+    try {
+      const res = await fetch("https://emkc.org/api/v2/piston/execute", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          language: cfg.language,
+          version: cfg.version,
+          files: [{ name: filename, content: code }],
+        }),
+      });
+      if (!res.ok) throw new Error(`Runner returned ${res.status}`);
+      const data = await res.json() as {
+        compile?: { stderr?: string; code?: number };
+        run?: { stderr?: string; stdout?: string; code?: number };
+      };
+      const compileErr = data.compile?.stderr?.trim();
+      const runErr = data.run?.stderr?.trim();
+      const stdout = data.run?.stdout ?? "";
+      if (compileErr && (data.compile?.code ?? 0) !== 0) {
+        setRunResult({ ok: false, message: compileErr });
+      } else if (runErr && (data.run?.code ?? 0) !== 0) {
+        setRunResult({ ok: false, message: runErr });
+      } else {
+        setRunResult({ ok: true, message: `Executed successfully.\n\nOutput:\n${stdout || "(no output)"}` });
+      }
+    } catch (err) {
+      setRunResult({ ok: false, message: err instanceof Error ? err.message : "Unable to run code." });
+    } finally {
+      setRunning(false);
+    }
+  }, [code, language, running]);
 
   // Access guard: must be qualified.
   useEffect(() => {
