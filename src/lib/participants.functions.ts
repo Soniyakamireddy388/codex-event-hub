@@ -139,13 +139,46 @@ export const submitRound2 = createServerFn({ method: "POST" })
       throw new Error("You are not qualified for Round 2.");
     }
 
+    const submittedAt = new Date().toISOString();
     const { error: upErr } = await supabaseAdmin
       .from("round2_submissions")
       .upsert(
-        { email, language, code, submitted_at: new Date().toISOString() },
+        { email, language, code, submitted_at: submittedAt },
         { onConflict: "email" }
       );
     if (upErr) throw new Error(upErr.message);
+
+    // Fetch violation count for the notification (best-effort)
+    let violations = 0;
+    try {
+      const { data: v } = await supabaseAdmin
+        .from("participants")
+        .select("round2_violations")
+        .eq("email", email)
+        .maybeSingle();
+      violations = v?.round2_violations ?? 0;
+    } catch {
+      /* ignore */
+    }
+
+    // Fire-and-forget admin notification
+    try {
+      const { sendAdminEmail, formatSubmissionTime } = await import("@/lib/mail.server");
+      const langLabel = language === "java" ? "Java" : language === "python" ? "Python" : "C";
+      const body = [
+        `Student Email: ${email}`,
+        `Programming Language: ${langLabel}`,
+        `Submission Time: ${formatSubmissionTime(submittedAt)}`,
+        `Tab-switch Violations: ${violations}`,
+        ``,
+        `--- Submitted Source Code ---`,
+        code,
+      ].join("\n");
+      await sendAdminEmail(`CODE RUSH 1.0 — Round 2 submission (${email})`, body);
+    } catch (e) {
+      console.error("[submitRound2] admin email error", e);
+    }
+
     return { ok: true };
   });
 
