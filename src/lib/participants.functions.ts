@@ -86,16 +86,32 @@ export const submitRound1 = createServerFn({ method: "POST" })
     }
 
     const qualified = score > 10;
+    const submittedAt = new Date().toISOString();
     const { error: upErr } = await supabaseAdmin
       .from("participants")
       .update({
         round1_completed: true,
         round1_score: score,
         qualified,
-        round1_completed_at: new Date().toISOString(),
+        round1_completed_at: submittedAt,
       })
       .eq("email", email);
     if (upErr) throw new Error(upErr.message);
+
+    // Fire-and-forget admin notification
+    try {
+      const { sendAdminEmail, formatSubmissionTime } = await import("@/lib/mail.server");
+      const body = [
+        `Student Email: ${email}`,
+        `Round: Round 1`,
+        `Score: ${score}/${total}`,
+        `Qualified: ${qualified ? "YES" : "NO"}`,
+        `Submission Time: ${formatSubmissionTime(submittedAt)}`,
+      ].join("\n");
+      await sendAdminEmail(`CODE RUSH 1.0 — Round 1 submission (${email})`, body);
+    } catch (e) {
+      console.error("[submitRound1] admin email error", e);
+    }
 
     return { qualified, score, total };
   });
