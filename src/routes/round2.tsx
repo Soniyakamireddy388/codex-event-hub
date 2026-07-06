@@ -186,6 +186,7 @@ function Round2() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <ViolationBanner warning={warning} violations={violations} onDismiss={dismissWarning} />
       <div className="sticky top-16 z-10 mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-xl border border-primary/40 bg-background/80 px-5 py-3 backdrop-blur neon-border">
         <div className="min-w-0">
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Round 2 · Debugging Challenge</div>
