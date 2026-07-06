@@ -44,6 +44,33 @@ export type Database = {
         }
         Relationships: []
       }
+      round2_submissions: {
+        Row: {
+          code: string
+          created_at: string
+          email: string
+          id: string
+          language: string
+          submitted_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email: string
+          id?: string
+          language: string
+          submitted_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email?: string
+          id?: string
+          language?: string
+          submitted_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
