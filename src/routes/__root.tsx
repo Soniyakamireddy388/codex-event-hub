@@ -90,11 +90,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <QueryClientProvider client={queryClient}>
       <div className="relative flex min-h-screen flex-col">
         <SiteHeader />
-        <main className="flex-1">
+        <main key={pathname} className="flex-1 animate-fade-in">
           <Outlet />
         </main>
         <SiteFooter />
