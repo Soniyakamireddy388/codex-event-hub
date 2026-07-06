@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
-import { Loader2, Clock, Bug, CheckCircle2 } from "lucide-react";
+import { Loader2, Clock, Bug, CheckCircle2, Play, Terminal } from "lucide-react";
 import { getParticipantStatus, submitRound2 } from "@/lib/participants.functions";
 import { loadEmail, clearEmail } from "@/lib/session";
 import { useAssessmentMonitor } from "@/lib/useAssessmentMonitor";
