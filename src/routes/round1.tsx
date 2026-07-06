@@ -22,16 +22,27 @@ type Question = {
 };
 
 const QUESTIONS: Question[] = [
+  // Programming Fundamentals
+  { q: "Which data structure uses LIFO order?", options: ["Queue", "Stack", "Heap", "Array"], answer: 1 },
   { q: "What is the time complexity of binary search on a sorted array of n elements?", options: ["O(n)", "O(log n)", "O(n log n)", "O(1)"], answer: 1 },
-  { q: "Which data structure uses LIFO order?", options: ["Queue", "Stack", "Heap", "Linked List"], answer: 1 },
-  { q: "In C, what does 'malloc' return on failure?", options: ["0", "-1", "NULL", "undefined"], answer: 2 },
-  { q: "Which SQL clause is used to filter aggregated results?", options: ["WHERE", "GROUP BY", "HAVING", "ORDER BY"], answer: 2 },
-  { q: "Which of these is NOT a valid OSI layer?", options: ["Transport", "Session", "Encryption", "Physical"], answer: 2 },
-  { q: "Which keyword prevents a variable from being reassigned in JavaScript?", options: ["let", "var", "const", "static"], answer: 2 },
-  { q: "Which sorting algorithm has the best average-case complexity of O(n log n)?", options: ["Bubble sort", "Insertion sort", "Merge sort", "Selection sort"], answer: 2 },
+  { q: "Which sorting algorithm has an average-case complexity of O(n log n)?", options: ["Bubble sort", "Insertion sort", "Merge sort", "Selection sort"], answer: 2 },
+  // Java
+  { q: "In Java, which keyword is used to inherit a class?", options: ["implements", "extends", "inherits", "super"], answer: 1 },
+  { q: "Which of these is NOT a primitive type in Java?", options: ["int", "float", "String", "boolean"], answer: 2 },
+  { q: "The default value of a boolean instance variable in Java is:", options: ["true", "false", "null", "0"], answer: 1 },
+  // Python
   { q: "In Python, what does the expression '3 // 2' evaluate to?", options: ["1.5", "1", "2", "Error"], answer: 1 },
-  { q: "Which protocol is connection-oriented?", options: ["UDP", "IP", "TCP", "ICMP"], answer: 2 },
-  { q: "The primary key of a relational table must be:", options: ["Unique and nullable", "Unique and not null", "Not null but not unique", "None of these"], answer: 1 },
+  { q: "Which Python collection is ordered and immutable?", options: ["list", "set", "dict", "tuple"], answer: 3 },
+  { q: "What is the output of len('CODE RUSH')?", options: ["8", "9", "10", "Error"], answer: 1 },
+  // C
+  { q: "In C, what does 'malloc' return on failure?", options: ["0", "-1", "NULL", "undefined"], answer: 2 },
+  { q: "Which C operator is used to access the value at a pointer's address?", options: ["&", "*", "->", "."], answer: 1 },
+  // AI & Emerging Technologies
+  { q: "Which of the following is a supervised learning algorithm?", options: ["K-Means", "Linear Regression", "DBSCAN", "PCA"], answer: 1 },
+  { q: "GPT stands for:", options: ["General Processing Tool", "Generative Pre-trained Transformer", "Global Pattern Tracker", "Guided Predictive Text"], answer: 1 },
+  // Logical Reasoning
+  { q: "If all Bloops are Razzies and all Razzies are Lazzies, then all Bloops are definitely:", options: ["Razzies only", "Lazzies", "Neither", "Cannot be determined"], answer: 1 },
+  { q: "Find the next number: 2, 6, 12, 20, 30, ?", options: ["36", "40", "42", "44"], answer: 2 },
 ];
 
 function Round1() {
@@ -40,7 +51,7 @@ function Round1() {
   const [email, setEmail] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [remaining, setRemaining] = useState(45 * 60); // 45 minutes
+  const [remaining, setRemaining] = useState(10 * 60); // 10 minutes
 
   // Guard: verify email + not already attempted
   useEffect(() => {
