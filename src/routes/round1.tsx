@@ -86,7 +86,7 @@ function Round1() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remaining, phase]);
 
-  async function handleSubmit() {
+  const handleSubmit = useCallback(async () => {
     if (!email || phase === "submitting") return;
     setPhase("submitting");
     const score = QUESTIONS.reduce((acc, q, i) => acc + (answers[i] === q.answer ? 1 : 0), 0);
@@ -98,7 +98,14 @@ function Round1() {
       setErrorMsg(err instanceof Error ? err.message : "Submission failed.");
       setPhase("error");
     }
-  }
+  }, [email, phase, answers, navigate]);
+
+  const { violations, warning, dismissWarning } = useAssessmentMonitor({
+    email,
+    round: "round1",
+    enabled: phase === "ready",
+    onAutoSubmit: () => { void handleSubmit(); },
+  });
 
   if (phase === "checking") {
     return (
