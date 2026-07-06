@@ -291,7 +291,14 @@ function Round2() {
         />
       </div>
 
-      <div className="mt-8 flex flex-col items-center gap-3">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <button
+          onClick={handleRun}
+          disabled={running}
+          className="inline-flex items-center gap-2 rounded-md border border-primary/60 bg-primary/10 px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-primary transition hover:bg-primary/20 disabled:opacity-70"
+        >
+          {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Running…</> : <><Play className="h-4 w-4" /> Run Code</>}
+        </button>
         <button
           onClick={() => handleSubmit(false)}
           disabled={phase === "submitting"}
@@ -299,8 +306,27 @@ function Round2() {
         >
           {phase === "submitting" ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</> : "Submit Round 2"}
         </button>
-        <p className="text-xs text-muted-foreground">Your code will auto-submit when the timer hits 00:00.</p>
       </div>
+
+      {runResult && (
+        <div
+          className={`mt-6 overflow-hidden rounded-xl border ${
+            runResult.ok ? "border-emerald-500/50 bg-emerald-500/5" : "border-destructive/50 bg-destructive/5"
+          }`}
+        >
+          <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2">
+            <Terminal className={`h-4 w-4 ${runResult.ok ? "text-emerald-400" : "text-destructive"}`} />
+            <span className={`text-xs font-bold uppercase tracking-widest ${runResult.ok ? "text-emerald-400" : "text-destructive"}`}>
+              {runResult.ok ? "Executed" : "Error"}
+            </span>
+          </div>
+          <pre className="max-h-64 overflow-auto whitespace-pre-wrap px-4 py-3 text-sm font-mono text-foreground">
+{runResult.message}
+          </pre>
+        </div>
+      )}
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">Your code will auto-submit when the timer hits 00:00.</p>
     </div>
   );
 }
