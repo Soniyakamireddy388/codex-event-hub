@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      participants: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          qualified: boolean
+          round1_completed: boolean
+          round1_completed_at: string | null
+          round1_score: number | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          qualified?: boolean
+          round1_completed?: boolean
+          round1_completed_at?: string | null
+          round1_score?: number | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          qualified?: boolean
+          round1_completed?: boolean
+          round1_completed_at?: string | null
+          round1_score?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
